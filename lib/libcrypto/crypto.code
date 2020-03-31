@@ -1,0 +1,58 @@
+/******************************************************************************
+ * Copyright (c) 2020 IBM Corporation
+ * All rights reserved.
+ * This program and the accompanying materials
+ * are made available under the terms of the BSD License
+ * which accompanies this distribution, and is available at
+ * http://www.opensource.org/licenses/bsd-license.php
+ *
+ * Contributors:
+ *     IBM Corporation - initial implementation
+ *****************************************************************************/
+/*
+ * mbedtls bindings for SLOF - implementation
+ */
+
+#include <mbedtls/sha256.h>
+
+/************************************************/
+/* Prepare a SHA-256 context                    */
+/* SLOF:   sha-256-init  ( buffer -- buffer )   */
+/* MBEDCRYPTO: mbedtls_sha256_init,starts_ret(buffer)      */
+/************************************************/
+PRIM(sha_X2d_256_X2d_init)
+	mbedtls_sha256_init(TOS.a);
+	mbedtls_sha256_starts_ret(TOS.a, 0);
+MIRP
+
+
+/************************************************/
+/* Add some bytes to a SHA-256 contex           */
+/* SLOF:   sha-256-process  ( buffer addr bytes -- buffer )   */
+/* MBEDCRYPTO: mbedtls_sha256_update_ret()      */
+/************************************************/
+PRIM(sha_X2d_256_X2d_process)
+	uint8_t * bytes;
+	size_t len = TOS.u;
+	POP;
+	bytes = TOS.a;
+	POP;
+	mbedtls_sha256_update_ret(TOS.a, bytes, len);
+MIRP
+
+
+
+
+
+/************************************************/
+/* Finish a SHA-256 operation           */
+/* SLOF:   sha-256-finish  ( context result_buf -- context result_buf )   */
+/* MBEDCRYPTO: mbedtls_sha256_finish_ret()      */
+/************************************************/
+PRIM(sha_X2d_256_X2d_finish)
+	void * results = TOS.a;
+	POP;
+	mbedtls_sha256_finish_ret(TOS.a, results);
+	PUSH;
+	TOS.a = results;
+MIRP

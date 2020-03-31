@@ -22,7 +22,8 @@ CPPFLAGS = -I$(LIBCMNDIR)/libbootmsg -I$(LIBCMNDIR)/libhvcall \
 	   -I$(LIBCMNDIR)/libvirtio -I$(LIBCMNDIR)/libnvram \
 	   -I$(LIBCMNDIR)/libusb -I$(LIBCMNDIR)/libveth \
 	   -I$(LIBCMNDIR)/libe1k -I$(LIBCMNDIR)/libnet \
-	   -I$(LIBCMNDIR)/libbootmenu -I$(LIBCMNDIR)/libtpm
+	   -I$(LIBCMNDIR)/libbootmenu -I$(LIBCMNDIR)/libtpm \
+	   -I$(LIBCMNDIR)/libcrypto -I$(LIBCMNDIR)/libcrypto/mbedtls/include
 
 SLOF_LIBS = \
 	$(LIBCMNDIR)/libbootmsg.a \
@@ -35,7 +36,8 @@ SLOF_LIBS = \
 	$(LIBCMNDIR)/libe1k.a \
 	$(LIBCMNDIR)/libnet.a \
 	$(LIBCMNDIR)/libbootmenu.a \
-	$(LIBCMNDIR)/libtpm.a
+	$(LIBCMNDIR)/libtpm.a \
+	$(LIBCMNDIR)/libcrypto.a
 
 BOARD_SLOF_IN = \
 	$(LIBCMNDIR)/libhvcall/hvcall.in \
@@ -49,7 +51,8 @@ BOARD_SLOF_IN = \
 	$(LIBCMNDIR)/libe1k/e1k.in \
 	$(LIBCMNDIR)/libnet/libnet.in \
 	$(LIBCMNDIR)/libbootmenu/bootmenu.in \
-	$(LIBCMNDIR)/libtpm/tpm.in
+	$(LIBCMNDIR)/libtpm/tpm.in \
+	$(LIBCMNDIR)/libcrypto/crypto.in
 
 BOARD_SLOF_CODE = $(BOARD_SLOF_IN:%.in=%.code)
 

@@ -11,7 +11,7 @@
 # ****************************************************************************/
 
 SUBDIRS = libc libipmi libbootmsg libbases libnvram libelf libhvcall libvirtio \
-          libusb libveth libe1k libbcm libnet libbootmenu libtpm
+          libusb libveth libe1k libbcm libnet libbootmenu libtpm libcrypto
 
 all:  subdirs
 

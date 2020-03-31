@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (c) 2004, 2008 IBM Corporation
+ * Copyright (c) 2015-2020 IBM Corporation
  * All rights reserved.
  * This program and the accompanying materials
  * are made available under the terms of the BSD License
@@ -9,26 +9,12 @@
  * Contributors:
  *     IBM Corporation - initial implementation
  *****************************************************************************/
+/*
+ * mbedtls bindings for SLOF - definitions
+ */
 
-#ifndef _LIMITS_H
-#define _LIMITS_H
-
-#define		CHAR_BIT	8
-
-#define 	UCHAR_MAX	255
-#define 	SCHAR_MAX	127
-#define 	SCHAR_MIN	(-128)
-
-#define 	USHRT_MAX	65535
-#define 	SHRT_MAX	32767
-#define 	SHRT_MIN	(-32768)
-
-#define 	UINT_MAX	(4294967295U)
-#define 	INT_MAX 	2147483647
-#define 	INT_MIN 	(-2147483648)
-
-#define 	ULONG_MAX	((unsigned long)-1L)
-#define 	LONG_MAX	(ULONG_MAX/2)
-#define 	LONG_MIN	((-LONG_MAX)-1)
-
-#endif
+cod(sha-256-init)
+cod(sha-256-process)
+cod(sha-256-finish)
+/* sizeof(mbedtls_sha256_context), i think - TODO verify */
+con(sha-256-context-size 108)
