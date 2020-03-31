@@ -1,0 +1,6 @@
+I have vendored mbedtls rather than using a submodule.
+
+I am using Nayna Jain's pkcs7 branch:
+https://github.com/naynajain/mbedtls/tree/pkcs7
+commit
+9348fd8eb1d423b2f4722b10a8b1d9b329a42ea2
