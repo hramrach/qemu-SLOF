@@ -113,7 +113,7 @@ elf_load_segments32(void *file_addr, signed long offset,
 	/* loop e_phnum times */
 	for (i = 0; i <= ehdr->e_phnum; i++) {
 		/* PT_LOAD ? */
-		if (phdr->p_type == 1) {
+		if (phdr->p_type == PT_LOAD) {
 			if (phdr->p_paddr != phdr->p_vaddr) {
 				printf("ELF32: VirtAddr(%lx) != PhysAddr(%lx) not supported, aborting\n",
 					(long)phdr->p_vaddr, (long)phdr->p_paddr);
@@ -149,7 +149,7 @@ elf_get_base_addr32(void *file_addr)
 	/* loop e_phnum times */
 	for (i = 0; i <= ehdr->e_phnum; i++) {
 		/* PT_LOAD ? */
-		if (phdr->p_type == 1) {
+		if (phdr->p_type == PT_LOAD) {
 			return phdr->p_paddr;
 		}
 		/* step to next header */
