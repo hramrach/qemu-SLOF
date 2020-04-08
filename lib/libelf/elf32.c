@@ -19,6 +19,10 @@
 #include <byteorder.h>
 #include <helpers.h>
 
+#define ALIGN(x, a) (((x) + ((a) - 1)) & ~((a) - 1))
+
+static char appsig_magic[] = "~Module signature appended~\n";
+
 struct ehdr32 {
 	uint32_t ei_ident;
 	uint8_t ei_class;
@@ -62,6 +66,22 @@ struct shdr32 {
 	uint32_t sh_info;
 	uint32_t sh_addralign;
 	uint32_t sh_entsize;
+};
+
+struct nhdr32 {
+	uint32_t n_namesz;
+	uint32_t n_descsz;
+	uint32_t n_type;
+};
+
+struct module_signature {
+	uint8_t		algo;		/* Public-key crypto algorithm [0] */
+	uint8_t		hash;		/* Digest algorithm [0] */
+	uint8_t		id_type;	/* Key identifier type [PKEY_ID_PKCS7] */
+	uint8_t		signer_len;	/* Length of signer's name [0] */
+	uint8_t		key_id_len;	/* Length of key identifier [0] */
+	uint8_t		__pad[3];
+	uint32_t	sig_len;	/* Length of signature data */
 };
 
 static struct phdr32*
@@ -123,6 +143,51 @@ elf_load_segments32(void *file_addr, signed long offset,
 			/* copy segment */
 			load_segment(file_addr, phdr, offset, pre_load,
 			             post_load);
+		} else if (phdr->p_type == PT_NOTE) {
+			struct nhdr32 *nhdr = (struct nhdr32 *)(file_addr + phdr->p_offset);
+			char *ptr;
+			struct module_signature *modsig;
+			//printf("%x %x %x\n", nhdr->n_namesz, nhdr->n_descsz, nhdr->n_type);
+
+			// todo - endiansafeness
+			// todo, verify it is over the whole file (elf headers vs where this is)
+			if (nhdr->n_type == APPENDED_SIGNATURE_NOTE_TYPE) {
+				// todo, verify name
+
+				// check for magic
+				// go to start of appsig block
+				ptr = (char *)(nhdr) + sizeof(struct nhdr32) + ALIGN(nhdr->n_namesz, 4);
+				// go to start of sig
+				ptr += nhdr->n_descsz - sizeof(appsig_magic) + 1; // appsig_magic contains null-term
+				
+				if (strncmp(ptr, appsig_magic, sizeof(appsig_magic))) {
+					printf("ELF32: appended signature note present but magic string missing. Aborting.\n");
+					return 0;
+				}
+
+				// now load the sig info
+				ptr -= sizeof(struct module_signature);
+				modsig = (struct module_signature *)ptr;
+
+				//printf("%x %x %x %x %x\n", modsig->algo, modsig->hash, modsig->id_type, modsig->key_id_len, modsig->signer_len);
+				if (modsig->id_type != 2) { // pkcs7
+					printf("ELF32: appended signature is in an unexpected format (not PKCS#7). Aborting.\n");
+					return 0;
+				}
+
+				if (modsig->algo != 0 || modsig->hash != 0 || modsig->key_id_len != 0 || modsig->signer_len != 0) {
+					printf("ELF32: appended signature has an unexpected parameter inconsistend with PKCS#7. Aborting.\n");
+					return 0;
+				}
+
+				//printf("%u %u %u -1 = %u\n", modsig->sig_len, sizeof(struct module_signature), sizeof(appsig_magic), nhdr->n_descsz);
+				if (ALIGN(modsig->sig_len + sizeof(struct module_signature) + sizeof(appsig_magic) - 1, 4) != nhdr->n_descsz) {
+					printf("ELF32: Appended signature component sizes don't add up as expected. Aborting.\n");
+					return 0;
+				}
+
+				
+			}
 		}
 		/* step to next header */
 		phdr = (struct phdr32 *)(((uint8_t *)phdr) + ehdr->e_phentsize);

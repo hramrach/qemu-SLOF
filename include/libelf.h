@@ -68,6 +68,7 @@ struct ehdr {
 #define PT_INTERP	3	/* Program interpreter path name */
 #define PT_NOTE 	4	/* Note sections */
 
+#define APPENDED_SIGNATURE_NOTE_TYPE 0x41536967 /* "ASig" */
 
 int elf_load_file(void *file_addr, unsigned long *entry,
                   int (*pre_load)(void*, long),
