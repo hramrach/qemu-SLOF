@@ -12,7 +12,7 @@
 
 
 STDLIB_SRC_C =  error.c atoi.c atol.c strtoul.c strtol.c rand.c \
-		 malloc.c memalign.c realloc.c free.c
+		 malloc.c calloc.c memalign.c realloc.c free.c
 		
 STDLIB_SRC_ASM = 
 STDLIB_SRCS = $(STDLIB_SRC_C:%=$(STDLIBCMNDIR)/%) $(STDLIB_SRC_ASM:%=$(STDLIBCMNDIR)/%)
