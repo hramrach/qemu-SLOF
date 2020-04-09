@@ -203,3 +203,7 @@ void early_c_entry(uint64_t start_addr, uint64_t fdt_addr)
 	asm volatile("isync; sync;" : : : "memory");
 	// never return
 }
+
+int verify_appended_signature(void * ptr, size_t s) {
+	return 1;
+}
