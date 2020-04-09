@@ -31,8 +31,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#if defined(MBEDTLS_FS_IO)
 #include <sys/types.h>
 #include <sys/stat.h>
+#endif
 #include <unistd.h>
 
 #if defined(MBEDTLS_PLATFORM_C)
@@ -54,6 +56,7 @@
 #include <time.h>
 #endif
 
+#if defined(MBEDTLS_FS_IO)
 /*
  * Load all data from a file into a given buffer.
  *
@@ -98,6 +101,7 @@ int mbedtls_pkcs7_load_file( const char *path, unsigned char **buf, size_t *n )
 
     return( 0 );
 }
+#endif
 
 /**
  * Initializes the pkcs7 structure.
@@ -383,22 +387,22 @@ static int pkcs7_get_signed_data( unsigned char *buf, size_t buflen,
 
       p = p + signed_data->content.oid.len;
 
+      /* Look for certificates, there may or may not be any */
       ret = pkcs7_get_next_content_len( &p, end, &len );
-      if ( ret != 0 )
-              return ( ret ); 
+      if ( ret == 0 ) {
 
-      /* Get certificates */
-      mbedtls_x509_crt_init( &signed_data->certs );
-      ret = pkcs7_get_certificates( &p, len, &signed_data->certs );
-      if ( ret != 0 )
-              return ( ret ) ;
+	      /* Get certificates */
+     	      mbedtls_x509_crt_init( &signed_data->certs );
+      	      ret = pkcs7_get_certificates( &p, len, &signed_data->certs );
+      	      if ( ret != 0 )
+        	return ( ret ) ;
 
-      p = p + len;
+	      p = p + len;
+      }
+      /* TODO: optional CRLs go here */
 
       /* Get signers info */
       ret = pkcs7_get_signers_info_set( &p, end, &signed_data->signers );
-      if ( ret != 0 )
-              return ( ret );
 
       return ( ret );
 }
@@ -409,7 +413,7 @@ int mbedtls_pkcs7_parse_der( const unsigned char *buf, const int buflen,
       unsigned char *start;
       unsigned char *end;
       size_t len = 0;
-      int ret;
+      int ret = 0;
 
       /* use internal buffer for parsing */
       start = ( unsigned char * )buf;
@@ -447,15 +451,15 @@ int mbedtls_pkcs7_parse_der( const unsigned char *buf, const int buflen,
       }
       mbedtls_printf("Content type is SignedData\n");
 
+      // todo: verify if this can push start into an OOB read.
       start = start + pkcs7->content_type_oid.len;
 
+   
       ret = pkcs7_get_next_content_len( &start, end, &len );
       if ( ret != 0 )
               goto out;
 
       ret = pkcs7_get_signed_data( start, len, &pkcs7->signed_data );
-      if ( ret != 0 )
-              goto out;
 
 out:
       return ( ret );
