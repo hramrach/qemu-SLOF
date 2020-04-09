@@ -23,7 +23,17 @@ TARGET = ../libcrypto.a
 
 all: $(TARGET)
 
-SRCS = mbedtls/library/sha256.c mbedtls/library/platform_util.c
+SRCS = appended_sig.c \
+       mbedtls/library/platform_util.c \
+       mbedtls/library/sha256.c mbedtls/library/sha512.c mbedtls/library/pkcs7.c \
+       mbedtls/library/asn1parse.c \
+       mbedtls/library/x509.c mbedtls/library/x509_crt.c mbedtls/library/x509_crl.c \
+       mbedtls/library/pk.c mbedtls/library/pk_wrap.c mbedtls/library/pkparse.c \
+       mbedtls/library/md.c mbedtls/library/md_wrap.c \
+       mbedtls/library/oid.c \
+       mbedtls/library/rsa.c mbedtls/library/rsa_internal.c \
+       mbedtls/library/bignum.c
+
 
 OBJS = $(SRCS:%.c=%.o)
 

@@ -14,7 +14,8 @@ TOPCMNDIR ?= ../..
 
 include $(TOPCMNDIR)/make.rules
 
-CPPFLAGS = -I../libc/include $(CPUARCHDEF) -I$(INCLCMNDIR) -I$(INCLCMNDIR)/$(CPUARCH)
+CPPFLAGS = -I../libc/include $(CPUARCHDEF) -I$(INCLCMNDIR) -I$(INCLCMNDIR)/$(CPUARCH) \
+	   -I$(LIBCMNDIR)/libcrypto
 LDFLAGS= -nostdlib
 
 TARGET = ../libelf.a
