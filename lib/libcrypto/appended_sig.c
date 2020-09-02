@@ -59,7 +59,7 @@ int verify_appended_signature(void *blob, size_t len) {
 
 
 	rc = mbedtls_pkcs7_parse_der(ptr, modsig->sig_len, pkcs7);
-	if (rc) {
+	if (rc != MBEDTLS_PKCS7_SIGNED_DATA) {
 		printf("Appended signature: error parsing PKCS#7 data: %d. Aborting.\n", rc);
 		rc = 0;
 		goto exit;
