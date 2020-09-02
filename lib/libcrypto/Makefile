@@ -29,8 +29,7 @@ SRCS = appended_sig.c \
        mbedtls/library/asn1parse.c \
        mbedtls/library/x509.c mbedtls/library/x509_crt.c mbedtls/library/x509_crl.c \
        mbedtls/library/pk.c mbedtls/library/pk_wrap.c mbedtls/library/pkparse.c \
-       mbedtls/library/md.c mbedtls/library/md_wrap.c \
-       mbedtls/library/oid.c \
+       mbedtls/library/md.c mbedtls/library/oid.c \
        mbedtls/library/rsa.c mbedtls/library/rsa_internal.c \
        mbedtls/library/bignum.c
 

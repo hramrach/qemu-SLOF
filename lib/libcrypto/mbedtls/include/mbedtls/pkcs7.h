@@ -38,16 +38,16 @@
  * \name PKCS7 Error codes
  * \{
  */
-#define MBEDTLS_ERR_PKCS7_FEATURE_UNAVAILABLE              -0x7080  /**< Unavailable feature, e.g. anything other than signed data. */
-#define MBEDTLS_ERR_PKCS7_INVALID_FORMAT                   -0x7100  /**< The CRT/CRL format is invalid, e.g. different type expected. */
-#define MBEDTLS_ERR_PKCS7_INVALID_VERSION                  -0x7180  /**< The PKCS7 version element is invalid or cannot be parsed. */
-#define MBEDTLS_ERR_PKCS7_INVALID_CONTENT_INFO             -0x7200  /**< The PKCS7 content info invalid or cannot be parsed. */
-#define MBEDTLS_ERR_PKCS7_INVALID_ALG                      -0x7280  /**< The algorithm tag or value is invalid or cannot be parsed. */
-#define MBEDTLS_ERR_PKCS7_INVALID_SIGNATURE                -0x7300  /**< Error parsing the signature */
-#define MBEDTLS_ERR_PKCS7_INVALID_SIGNER_INFO              -0x7380  /**< Error parsing the signer's info */
-#define MBEDTLS_ERR_PKCS7_BAD_INPUT_DATA                   -0x7400  /**< Input invalid. */
-#define MBEDTLS_ERR_PKCS7_ALLOC_FAILED                     -0x7480  /**< Allocation of memory failed. */
-#define MBEDTLS_ERR_PKCS7_FILE_IO_ERROR                    -0x7500  /**< File Read/Write Error */
+#define MBEDTLS_ERR_PKCS7_FEATURE_UNAVAILABLE              -0x8080  /**< Unavailable feature, e.g. anything other than signed data. */
+#define MBEDTLS_ERR_PKCS7_INVALID_FORMAT                   -0x8100  /**< The CRT/CRL format is invalid, e.g. different type expected. */
+#define MBEDTLS_ERR_PKCS7_INVALID_VERSION                  -0x8180  /**< The PKCS7 version element is invalid or cannot be parsed. */
+#define MBEDTLS_ERR_PKCS7_INVALID_CONTENT_INFO             -0x8200  /**< The PKCS7 content info invalid or cannot be parsed. */
+#define MBEDTLS_ERR_PKCS7_INVALID_ALG                      -0x8280  /**< The algorithm tag or value is invalid or cannot be parsed. */
+#define MBEDTLS_ERR_PKCS7_INVALID_SIGNATURE                -0x8300  /**< Error parsing the signature */
+#define MBEDTLS_ERR_PKCS7_INVALID_SIGNER_INFO              -0x8380  /**< Error parsing the signer's info */
+#define MBEDTLS_ERR_PKCS7_BAD_INPUT_DATA                   -0x8400  /**< Input invalid. */
+#define MBEDTLS_ERR_PKCS7_ALLOC_FAILED                     -0x8480  /**< Allocation of memory failed. */
+#define MBEDTLS_ERR_PKCS7_FILE_IO_ERROR                    -0x8500  /**< File Read/Write Error */
 /* \} name */
 
 /**
@@ -78,56 +78,82 @@ typedef mbedtls_asn1_named_data mbedtls_pkcs7_name;
 typedef mbedtls_asn1_sequence mbedtls_pkcs7_sequence;
 
 /**
+ * PKCS7 types
+ */
+typedef enum {
+    MBEDTLS_PKCS7_NONE=0,
+    MBEDTLS_PKCS7_DATA,
+    MBEDTLS_PKCS7_SIGNED_DATA,
+    MBEDTLS_PKCS7_ENVELOPED_DATA,
+    MBEDTLS_PKCS7_SIGNED_AND_ENVELOPED_DAYA,
+    MBEDTLS_PKCS7_DIGESTED_DATA,
+    MBEDTLS_PKCS7_ENCRYPTED_DATA,
+}
+mbedtls_pkcs7_type;
+
+/**
  * Structure holding PKCS7 signer info
  */
-typedef struct mbedtls_pkcs7_signer_info {
-        int version;
-        mbedtls_x509_buf serial;
-        mbedtls_x509_name issuer;
-        mbedtls_x509_buf issuer_raw;
-        mbedtls_x509_buf alg_identifier;
-        mbedtls_x509_buf sig_alg_identifier;
-        mbedtls_x509_buf sig;
-        struct mbedtls_pkcs7_signer_info *next;
+typedef struct mbedtls_pkcs7_signer_info
+{
+    int version;
+    mbedtls_x509_buf serial;
+    mbedtls_x509_name issuer;
+    mbedtls_x509_buf issuer_raw;
+    mbedtls_x509_buf alg_identifier;
+    mbedtls_x509_buf sig_alg_identifier;
+    mbedtls_x509_buf sig;
+    struct mbedtls_pkcs7_signer_info *next;
 }
 mbedtls_pkcs7_signer_info;
 
 /**
  * Structure holding attached data as part of PKCS7 signed data format
  */
-typedef struct mbedtls_pkcs7_data {
-        mbedtls_pkcs7_buf oid;
-        mbedtls_pkcs7_buf data;
+typedef struct mbedtls_pkcs7_data
+{
+    mbedtls_pkcs7_buf oid;
+    mbedtls_pkcs7_buf data;
 }
 mbedtls_pkcs7_data;
 
 /**
  * Structure holding the signed data section
  */
-typedef struct mbedtls_pkcs7_signed_data {
-        int version;
-        mbedtls_pkcs7_buf digest_alg_identifiers;
-        struct mbedtls_pkcs7_data content;
-        mbedtls_x509_crt certs;
-        mbedtls_x509_crl crl;
-        struct mbedtls_pkcs7_signer_info signers;
+typedef struct mbedtls_pkcs7_signed_data
+{
+    int version;
+    mbedtls_pkcs7_buf digest_alg_identifiers;
+    struct mbedtls_pkcs7_data content;
+    mbedtls_x509_crt certs;
+    mbedtls_x509_crl crl;
+    struct mbedtls_pkcs7_signer_info *signers;
 }
 mbedtls_pkcs7_signed_data;
 
 /**
  * Structure holding PKCS7 structure, only signed data for now
  */
-typedef struct mbedtls_pkcs7 {
-        mbedtls_pkcs7_buf content_type_oid;
-        struct mbedtls_pkcs7_signed_data signed_data;
+typedef struct mbedtls_pkcs7
+{
+    mbedtls_pkcs7_buf content_type_oid;
+    struct mbedtls_pkcs7_signed_data signed_data;
 }
 mbedtls_pkcs7;
 
 void mbedtls_pkcs7_init( mbedtls_pkcs7 *pkcs7 );
 
-int mbedtls_pkcs7_parse_der(const unsigned char *buf, const int buflen, mbedtls_pkcs7 *pkcs7);
+int mbedtls_pkcs7_parse_der(const unsigned char *buf, const int buflen,
+                            mbedtls_pkcs7 *pkcs7);
 
-int mbedtls_pkcs7_signed_data_verify(mbedtls_pkcs7 *pkcs7, mbedtls_x509_crt *cert, const unsigned char *data, int datalen);
+int mbedtls_pkcs7_signed_data_verify(mbedtls_pkcs7 *pkcs7,
+                                     mbedtls_x509_crt *cert,
+                                     const unsigned char *data,
+                                     size_t datalen);
+
+int mbedtls_pkcs7_signed_hash_verify( mbedtls_pkcs7 *pkcs7,
+                                      mbedtls_x509_crt *cert,
+                                      const unsigned char *hash, int hashlen);
 
 int mbedtls_pkcs7_load_file( const char *path, unsigned char **buf, size_t *n );
 
