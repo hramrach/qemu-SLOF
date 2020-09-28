@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <mbedtls/pkcs7.h>
 #include "certificate.h"
+#include "../../slof/paflof.h"
 
 static char appsig_magic[] = "~Module signature appended~\n";
 
@@ -25,6 +26,15 @@ int verify_appended_signature(void *blob, size_t len) {
 	mbedtls_x509_crt *x509;
 	int rc = 0;
 	struct module_signature *modsig;
+
+	// only verify if in secure-boot mode.
+	// todo - oh so much, especially error handling
+	forth_eval("s\" /\" find-device s\" ibm,secure-boot\" get-node get-property");
+	if (forth_pop() == -1)
+		return 1;
+	forth_pop();
+	if (*(int32_t *)forth_pop() < 2)
+		return 1;
 
 	// go to start of magic
 	ptr = blob + (len - sizeof(appsig_magic) + 1); // appsig_magic contains null-term
