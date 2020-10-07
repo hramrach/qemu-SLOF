@@ -207,3 +207,7 @@ void early_c_entry(uint64_t start_addr, uint64_t fdt_addr)
 int verify_appended_signature(void * ptr, size_t s) {
 	return 1;
 }
+
+int is_secureboot() {
+	return 0;
+}

@@ -118,6 +118,7 @@ elf_load_segments32(void *file_addr, signed long offset,
 	/* Calculate program header address */
 	struct phdr32 *phdr = get_phdr32(file_addr);
 	int i;
+	int seen_appsig = 0;
 
 	/* loop e_phnum times */
 	for (i = 0; i <= ehdr->e_phnum; i++) {
@@ -154,10 +155,17 @@ elf_load_segments32(void *file_addr, signed long offset,
 				if (!verify_appended_signature(file_addr, size)) {
 					return 0;
 				}
+
+				seen_appsig = 1;
 			}
 		}
 		/* step to next header */
 		phdr = (struct phdr32 *)(((uint8_t *)phdr) + ehdr->e_phentsize);
+	}
+
+	if (is_secureboot() && !seen_appsig) {
+		printf("Booted in secure-boot mode but no appended signature found, aborting.\n");
+		return 0;
 	}
 
 	/* Entry point is always a virtual address, so translate it

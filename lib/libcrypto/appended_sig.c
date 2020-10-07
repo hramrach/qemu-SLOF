@@ -20,6 +20,18 @@ struct module_signature {
 	uint32_t	sig_len;	/* Length of signature data */
 };
 
+int is_secureboot() {
+	// only verify if in secure-boot mode.
+	// todo - oh so much, especially error handling
+	forth_eval("s\" /\" find-device s\" ibm,secure-boot\" get-node get-property");
+	if (forth_pop() == -1)
+		return 0;
+	forth_pop();
+	if (*(int32_t *)forth_pop() < 2)
+		return 0;
+	return 1;
+}
+
 int verify_appended_signature(void *blob, size_t len) {
 	void *ptr;
 	mbedtls_pkcs7 *pkcs7;
@@ -27,13 +39,7 @@ int verify_appended_signature(void *blob, size_t len) {
 	int rc = 0;
 	struct module_signature *modsig;
 
-	// only verify if in secure-boot mode.
-	// todo - oh so much, especially error handling
-	forth_eval("s\" /\" find-device s\" ibm,secure-boot\" get-node get-property");
-	if (forth_pop() == -1)
-		return 1;
-	forth_pop();
-	if (*(int32_t *)forth_pop() < 2)
+	if (!is_secureboot())
 		return 1;
 
 	// go to start of magic
