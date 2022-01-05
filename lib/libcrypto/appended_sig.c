@@ -32,10 +32,43 @@ int is_secureboot() {
 	return 1;
 }
 
+static int verify_one_cert(mbedtls_pkcs7 *pkcs7, const void *blob, size_t bloblen, const void *cert, size_t certlen, const char *certdesc)
+{
+	mbedtls_x509_crt *x509 = malloc(sizeof(mbedtls_x509_crt));
+	int rc = 0;
+
+	mbedtls_x509_crt_init(x509);
+	printf("%d\n", __LINE__);
+	rc = mbedtls_x509_crt_parse_der(x509, cert, certlen);
+	if (rc) {
+		printf("%d\n", __LINE__);
+
+		printf("Appended signature: internal error parsing %s x509 certificate.\n", certdesc);
+		rc = 0;
+		goto exit_x509;
+	}
+	printf("%d\n", __LINE__);
+
+	rc = mbedtls_pkcs7_signed_data_verify(pkcs7, x509, blob, bloblen);
+	printf("Appended signature: %sverified by %s x509 certificate.\n", rc ? "NOT " : "" , certdesc);
+	if (rc) {
+		printf("%d\n", __LINE__);
+		rc = 0;
+		goto exit_x509;
+	}
+
+	rc = 1;
+
+exit_x509:
+	mbedtls_x509_crt_free(x509);
+	free(x509);
+
+	return rc;
+}
+
 int verify_appended_signature(void *blob, size_t len) {
 	void *ptr;
 	mbedtls_pkcs7 *pkcs7;
-	mbedtls_x509_crt *x509;
 	int rc = 0;
 	struct module_signature *modsig;
 
@@ -69,10 +102,12 @@ int verify_appended_signature(void *blob, size_t len) {
 	// point at the pkcs7 data itself:
 	ptr -= modsig->sig_len;
 
+	printf("%d\n", __LINE__);
+	printf("ptr at %p, blob at %p, computed len %lu ? %lu\n", ptr, blob, len-(ptr-blob), (unsigned long)(ptr-blob));
+
 	// load into the pkcs7 code
 	pkcs7 = malloc(sizeof(mbedtls_pkcs7));
 	mbedtls_pkcs7_init(pkcs7);
-
 
 	rc = mbedtls_pkcs7_parse_der(ptr, modsig->sig_len, pkcs7);
 	if (rc != MBEDTLS_PKCS7_SIGNED_DATA) {
@@ -80,37 +115,18 @@ int verify_appended_signature(void *blob, size_t len) {
 		rc = 0;
 		goto exit;
 	}
-
-	x509 = malloc(sizeof(mbedtls_x509_crt));
-	mbedtls_x509_crt_init(x509);
-	printf("%d\n", __LINE__);
-	rc = mbedtls_x509_crt_parse_der(x509, certificate_der, certificate_der_len);
-	if (rc) {
 	printf("%d\n", __LINE__);
 
-		printf("Appended signature: internal error parsing builtin x509 certificate. Aborting.\n");
-		rc = 0;
-		goto exit_x509;
-	}
+	rc = verify_one_cert(pkcs7, blob, (ptr-blob), certificate_SLE_crt, certificate_SLE_crt_len, "SLE");
+	if (rc)
+	    goto exit;
+
+	rc = verify_one_cert(pkcs7, blob, (ptr-blob), certificate_der, certificate_der_len, "project");
+	if (rc)
+	    goto exit;
+
 	printf("%d\n", __LINE__);
-
-	printf("ptr at %p, blob at %p, computed len %lu ? %lu\n", ptr, blob, len-(ptr-blob), (unsigned long)(ptr-blob));
-
-	rc = mbedtls_pkcs7_signed_data_verify(pkcs7, x509, blob, (ptr - blob));
-	if (rc) {
-	printf("%d\n", __LINE__);
-		printf("Appended signature: verification failed. Refusing to proceed.\n");
-		rc = 0;
-		goto exit_x509;
-	}
-	printf("%d\n", __LINE__);
-
-	rc = 1;
-
-exit_x509:
-	mbedtls_x509_crt_free(x509);
-	free(x509);
-
+	printf("Appended signature: verification failed. Refusing to proceed.\n");
 exit:
 	mbedtls_pkcs7_free(pkcs7);
 	free(pkcs7);
